@@ -1,13 +1,12 @@
 /**
- * This file contains the root router of Lobe Chat tRPC-backend
+ * @deprecated
+ * TODO: it will be remove in V2.0
  */
-import { publicProcedure, router } from '@/libs/trpc';
+import { publicProcedure, router } from '@/libs/trpc/edge';
 
-import { configRouter } from './config';
 import { uploadRouter } from './upload';
 
 export const edgeRouter = router({
-  config: configRouter,
   healthcheck: publicProcedure.query(() => "i'm live!"),
   upload: uploadRouter,
 });

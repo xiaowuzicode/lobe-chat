@@ -13,14 +13,15 @@ export interface PluginStandaloneTypeProps {
 }
 
 const PluginDefaultType = memo<PluginStandaloneTypeProps>(({ payload, id, name = 'unknown' }) => {
-  const manifest = useToolStore(pluginSelectors.getPluginManifestById(name));
+  const manifest = useToolStore(pluginSelectors.getToolManifestById(name));
 
   if (!manifest?.ui) return;
 
   const ui = manifest.ui;
 
   if (!ui.url) return;
-
+  // if the id start with "tmp", return directly to avoid duplicate rendering
+  if (id.startsWith('tmp')) return;
   return (
     <IFrameRender
       height={ui.height}

@@ -5,10 +5,10 @@ import { Center, CenterProps, Flexbox } from 'react-layout-kit';
 
 export const useStyles = createStyles(({ css, token }) => ({
   container: css`
-    color: ${token.colorText};
-    background: ${token.colorBgContainer};
     border: 1px solid ${token.colorSplit};
     border-radius: 8px;
+    color: ${token.colorText};
+    background: ${token.colorBgContainer};
   `,
   desc: css`
     color: ${token.colorTextTertiary};
@@ -16,7 +16,11 @@ export const useStyles = createStyles(({ css, token }) => ({
   `,
   form: css`
     width: 100%;
-    max-width: 300px;
+    max-width: 360px;
+
+    @media (max-width: 768px) {
+      max-width: 90%;
+    }
   `,
 }));
 

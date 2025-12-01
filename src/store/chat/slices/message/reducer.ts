@@ -1,14 +1,24 @@
+import {
+  ChatMessageExtra,
+  ChatPluginPayload,
+  ChatToolPayload,
+  CreateMessageParams,
+  UIChatMessage,
+} from '@lobechat/types';
 import isEqual from 'fast-deep-equal';
 import { produce } from 'immer';
 
-import { CreateMessageParams } from '@/services/message';
-import { ChatMessage, ChatPluginPayload, ChatToolPayload } from '@/types/message';
 import { merge } from '@/utils/merge';
 
 interface UpdateMessages {
+  type: 'updateMessages';
+  value: UIChatMessage[];
+}
+
+interface UpdateMessage {
   id: string;
   type: 'updateMessage';
-  value: Partial<ChatMessage>;
+  value: Partial<UIChatMessage>;
 }
 
 interface CreateMessage {
@@ -67,6 +77,7 @@ interface UpdateMessageExtra {
 
 export type MessageDispatch =
   | CreateMessage
+  | UpdateMessage
   | UpdateMessages
   | UpdatePluginState
   | UpdateMessageExtra
@@ -77,7 +88,10 @@ export type MessageDispatch =
   | DeleteMessageTool
   | DeleteMessages;
 
-export const messagesReducer = (state: ChatMessage[], payload: MessageDispatch): ChatMessage[] => {
+export const messagesReducer = (
+  state: UIChatMessage[],
+  payload: MessageDispatch,
+): UIChatMessage[] => {
   switch (payload.type) {
     case 'updateMessage': {
       return produce(state, (draftState) => {
@@ -96,9 +110,9 @@ export const messagesReducer = (state: ChatMessage[], payload: MessageDispatch):
         if (!message) return;
 
         if (!message.extra) {
-          message.extra = { [key]: value } as any;
+          message.extra = { [key]: value } as ChatMessageExtra;
         } else {
-          message.extra[key] = value;
+          message.extra[key as keyof ChatMessageExtra] = value;
         }
 
         message.updatedAt = Date.now();
@@ -189,6 +203,11 @@ export const messagesReducer = (state: ChatMessage[], payload: MessageDispatch):
         draftState.push({ ...value, createdAt: Date.now(), id, meta: {}, updatedAt: Date.now() });
       });
     }
+
+    case 'updateMessages': {
+      return payload.value;
+    }
+
     case 'deleteMessage': {
       return produce(state, (draft) => {
         const { id } = payload;

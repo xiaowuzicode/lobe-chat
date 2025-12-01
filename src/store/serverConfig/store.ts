@@ -1,35 +1,48 @@
+import { StoreApiWithSelector } from '@lobechat/types';
 import { StoreApi } from 'zustand';
 import { createContext } from 'zustand-utils';
 import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { StateCreator } from 'zustand/vanilla';
 
-import { DEFAULT_FEATURE_FLAGS, IFeatureFlags } from '@/config/featureFlags';
+import {
+  DEFAULT_FEATURE_FLAGS,
+  IFeatureFlagsState,
+  mapFeatureFlagsEnvToState,
+} from '@/config/featureFlags';
 import { createDevtools } from '@/store/middleware/createDevtools';
 import { GlobalServerConfig } from '@/types/serverConfig';
 import { merge } from '@/utils/merge';
-import { StoreApiWithSelector } from '@/utils/zustand';
 
-const initialState: ServerConfigStore = {
-  featureFlags: DEFAULT_FEATURE_FLAGS,
-  serverConfig: { telemetry: {} },
+import { ServerConfigAction, createServerConfigSlice } from './action';
+
+interface ServerConfigState {
+  featureFlags: IFeatureFlagsState;
+  isMobile?: boolean;
+  segmentVariants?: string;
+  serverConfig: GlobalServerConfig;
+}
+
+const initialState: ServerConfigState = {
+  featureFlags: mapFeatureFlagsEnvToState(DEFAULT_FEATURE_FLAGS),
+  segmentVariants: '',
+  serverConfig: { aiProvider: {}, telemetry: {} },
 };
 
 //  ===============  聚合 createStoreFn ============ //
 
-export interface ServerConfigStore {
-  featureFlags: IFeatureFlags;
-  isMobile?: boolean;
-  serverConfig: GlobalServerConfig;
-}
+export interface ServerConfigStore extends ServerConfigState, ServerConfigAction {}
 
 type CreateStore = (
   initState: Partial<ServerConfigStore>,
 ) => StateCreator<ServerConfigStore, [['zustand/devtools', never]]>;
 
-const createStore: CreateStore = (runtimeState) => () => ({
-  ...merge(initialState, runtimeState),
-});
+const createStore: CreateStore =
+  (runtimeState) =>
+  (...params) => ({
+    ...merge(initialState, runtimeState),
+    ...createServerConfigSlice(...params),
+  });
 
 //  ===============  实装 useStore ============ //
 

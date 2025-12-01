@@ -9,6 +9,25 @@ import { createI18nNext } from '@/locales/create';
 import { isOnServerSide } from '@/utils/env';
 import { getAntdLocale } from '@/utils/locale';
 
+import Editor from './Editor';
+
+const updateDayjs = async (lang: string) => {
+  // load default lang
+  let dayJSLocale;
+  try {
+    // dayjs locale is using `en` instead of `en-US`
+    // refs: https://github.com/lobehub/lobe-chat/issues/3396
+    const locale = lang!.toLowerCase() === 'en-us' ? 'en' : lang!.toLowerCase();
+
+    dayJSLocale = await import(`dayjs/locale/${locale}.js`);
+  } catch {
+    console.warn(`dayjs locale for ${lang} not found, fallback to en`);
+    dayJSLocale = await import(`dayjs/locale/en.js`);
+  }
+
+  dayjs.locale(dayJSLocale.default);
+};
+
 interface LocaleLayoutProps extends PropsWithChildren {
   antdLocale?: any;
   defaultLang?: string;
@@ -21,7 +40,8 @@ const Locale = memo<LocaleLayoutProps>(({ children, defaultLang, antdLocale }) =
 
   // if run on server side, init i18n instance everytime
   if (isOnServerSide) {
-    i18n.init();
+    // use sync mode to init instantly
+    i18n.init({ initAsync: false });
 
     // load the dayjs locale
     // if (lang) {
@@ -36,10 +56,7 @@ const Locale = memo<LocaleLayoutProps>(({ children, defaultLang, antdLocale }) =
       i18n.init().then(async () => {
         if (!lang) return;
 
-        // load default lang
-        const dayJSLocale = await import(`dayjs/locale/${lang!.toLowerCase()}.js`);
-
-        dayjs.locale(dayJSLocale.default);
+        await updateDayjs(lang);
       });
   }
 
@@ -53,9 +70,7 @@ const Locale = memo<LocaleLayoutProps>(({ children, defaultLang, antdLocale }) =
       const newLocale = await getAntdLocale(lng);
       setLocale(newLocale);
 
-      const dayJSLocale = await import(`dayjs/locale/${lng.toLowerCase()}.js`);
-
-      dayjs.locale(dayJSLocale.default);
+      await updateDayjs(lng);
     };
 
     i18n.instance.on('languageChanged', handleLang);
@@ -68,8 +83,18 @@ const Locale = memo<LocaleLayoutProps>(({ children, defaultLang, antdLocale }) =
   const documentDir = isRtlLang(lang!) ? 'rtl' : 'ltr';
 
   return (
-    <ConfigProvider direction={documentDir} locale={locale}>
-      {children}
+    <ConfigProvider
+      direction={documentDir}
+      locale={locale}
+      theme={{
+        components: {
+          Button: {
+            contentFontSizeSM: 12,
+          },
+        },
+      }}
+    >
+      <Editor>{children}</Editor>
     </ConfigProvider>
   );
 });

@@ -1,9 +1,6 @@
-import { mapFeatureFlagsEnvToState } from '@/config/featureFlags';
-
 import { ServerConfigStore } from './store';
 
-export const featureFlagsSelectors = (s: ServerConfigStore) =>
-  mapFeatureFlagsEnvToState(s.featureFlags);
+export const featureFlagsSelectors = (s: ServerConfigStore) => s.featureFlags;
 
 export const serverConfigSelectors = {
   enableUploadFileToServer: (s: ServerConfigStore) => s.serverConfig.enableUploadFileToServer,
@@ -11,4 +8,5 @@ export const serverConfigSelectors = {
   enabledOAuthSSO: (s: ServerConfigStore) => s.serverConfig.enabledOAuthSSO,
   enabledTelemetryChat: (s: ServerConfigStore) => s.serverConfig.telemetry.langfuse || false,
   isMobile: (s: ServerConfigStore) => s.isMobile || false,
+  oAuthSSOProviders: (s: ServerConfigStore) => s.serverConfig.oAuthSSOProviders,
 };

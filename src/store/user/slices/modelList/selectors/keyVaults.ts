@@ -2,6 +2,7 @@ import { UserStore } from '@/store/user';
 import {
   AWSBedrockKeyVault,
   AzureOpenAIKeyVault,
+  ComfyUIKeyVault,
   GlobalLLMProviderKey,
   OpenAICompatibleKeyVault,
   UserKeyVaults,
@@ -16,10 +17,12 @@ const openAIConfig = (s: UserStore) => keyVaultsSettings(s).openai || {};
 const bedrockConfig = (s: UserStore) => keyVaultsSettings(s).bedrock || {};
 const ollamaConfig = (s: UserStore) => keyVaultsSettings(s).ollama || {};
 const azureConfig = (s: UserStore) => keyVaultsSettings(s).azure || {};
+const cloudflareConfig = (s: UserStore) => keyVaultsSettings(s).cloudflare || {};
 const getVaultByProvider = (provider: GlobalLLMProviderKey) => (s: UserStore) =>
   (keyVaultsSettings(s)[provider] || {}) as OpenAICompatibleKeyVault &
     AzureOpenAIKeyVault &
-    AWSBedrockKeyVault;
+    AWSBedrockKeyVault &
+    ComfyUIKeyVault;
 
 const isProviderEndpointNotEmpty = (provider: string) => (s: UserStore) => {
   const vault = getVaultByProvider(provider as GlobalLLMProviderKey)(s);
@@ -36,9 +39,11 @@ const password = (s: UserStore) => keyVaultsSettings(s).password || '';
 export const keyVaultsConfigSelectors = {
   azureConfig,
   bedrockConfig,
+  cloudflareConfig,
   getVaultByProvider,
   isProviderApiKeyNotEmpty,
   isProviderEndpointNotEmpty,
+  keyVaultsSettings,
   ollamaConfig,
   openAIConfig,
   password,
